@@ -12,7 +12,7 @@ const ProductCard = ({ product }) => {
       <img
         src={product.image}
         alt={product.title}
-        className="w-full h-48 object-cover rounded-md mb-3"
+        className="w-full h-48 object-contain bg-gray-50 rounded-md mb-3"
       />
       <div className="flex justify-between items-start">
         <h3 className="font-semibold text-lg">{product.title}</h3>
