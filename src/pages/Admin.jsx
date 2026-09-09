@@ -1,173 +1,141 @@
-import { useState } from "react"
-import { useSelector, useDispatch } from "react-redux"
-import { addProduct, updateProduct, deleteProduct } from "../features/products/productSlice"
-
-const emptyForm = {
-  title: "",
-  price: "",
-  image: "",
-  category: "",
-  description: "",
-  rating: "",
-  stock: "",
-}
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import ProductForm from "./ProductForm";
+import { deleteProduct } from "../features/products/productSlice";
 
 const Admin = () => {
-  const dispatch = useDispatch()
-  const products = useSelector((state) => state.products.products)
-
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    const productData = {
-      ...form,
-      price: parseFloat(form.price),
-      rating: parseFloat(form.rating),
-      stock: parseInt(form.stock),
-    }
-
-    if (editingId) {
-      dispatch(updateProduct({ ...productData, id: editingId }))
-      setEditingId(null)
-    } else {
-      dispatch(addProduct(productData))
-    }
-
-    setForm(emptyForm)
-  }
+  const dispatch = useDispatch();
+  const [editData, setEditData] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const products = useSelector((state) => state.products.products);
 
   const handleEdit = (product) => {
-    setForm({
-      title: product.title,
-      price: product.price,
-      image: product.image,
-      category: product.category,
-      description: product.description,
-      rating: product.rating,
-      stock: product.stock,
-    })
-    setEditingId(product.id)
-  }
+    setEditData(product);
+    setShowForm(true);
+  };
 
-  const handleCancelEdit = () => {
-    setForm(emptyForm)
-    setEditingId(null)
-  }
+  const handleAdd = () => {
+    setEditData(null);
+    setShowForm(true);
+  };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
-
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 border p-4 rounded-md">
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Title"
-          required
-          className="border rounded-md px-3 py-2"
-        />
-        <input
-          name="price"
-          value={form.price}
-          onChange={handleChange}
-          placeholder="Price"
-          type="number"
-          step="0.01"
-          required
-          className="border rounded-md px-3 py-2"
-        />
-        <input
-          name="image"
-          value={form.image}
-          onChange={handleChange}
-          placeholder="Image URL"
-          required
-          className="border rounded-md px-3 py-2"
-        />
-        <input
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          placeholder="Category"
-          required
-          className="border rounded-md px-3 py-2"
-        />
-        <input
-          name="rating"
-          value={form.rating}
-          onChange={handleChange}
-          placeholder="Rating"
-          type="number"
-          step="0.1"
-          max="5"
-          className="border rounded-md px-3 py-2"
-        />
-        <input
-          name="stock"
-          value={form.stock}
-          onChange={handleChange}
-          placeholder="Stock"
-          type="number"
-          className="border rounded-md px-3 py-2"
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="border rounded-md px-3 py-2 sm:col-span-2"
-        />
-
-        <div className="sm:col-span-2 flex gap-2">
-          <button type="submit" className="bg-black text-white px-6 py-2 rounded-md">
-            {editingId ? "Update Product" : "Add Product"}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={handleCancelEdit}
-              className="border px-6 py-2 rounded-md"
-            >
-              Cancel
-            </button>
-          )}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-display font-bold text-3xl text-stone-900">Admin Panel</h1>
+          <p className="text-stone-400 text-sm mt-1">{products.length} products in catalog</p>
         </div>
-      </form>
+        <button
+          onClick={handleAdd}
+          className="flex items-center gap-2 bg-stone-900 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-700 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add Product
+        </button>
+      </div>
 
-      <div className="flex flex-col gap-2">
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="flex items-center justify-between border rounded-md p-3"
-          >
-            <div className="flex items-center gap-3">
-              <img src={product.image} alt={product.title} className="w-12 h-12 object-cover rounded-md" />
-              <div>
-                <p className="font-semibold">{product.title}</p>
-                <p className="text-sm text-gray-500">${product.price} · {product.category}</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => handleEdit(product)} className="text-blue-600 text-sm">
-                Edit
-              </button>
-              <button onClick={() => dispatch(deleteProduct(product.id))} className="text-red-500 text-sm">
-                Delete
-              </button>
-            </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Total Products", value: products.length, icon: "📦" },
+          { label: "Total Value", value: `$${products.reduce((s, p) => s + Number(p.price), 0).toFixed(0)}`, icon: "💰" },
+          { label: "Avg Price", value: products.length ? `$${(products.reduce((s, p) => s + Number(p.price), 0) / products.length).toFixed(2)}` : "$0", icon: "📊" },
+          { label: "Categories", value: [...new Set(products.map((p) => p.category).filter(Boolean))].length, icon: "🏷️" },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white rounded-2xl border border-stone-100 p-4">
+            <div className="text-2xl mb-2">{stat.icon}</div>
+            <div className="font-display font-bold text-2xl text-stone-900">{stat.value}</div>
+            <div className="text-stone-400 text-xs mt-0.5">{stat.label}</div>
           </div>
         ))}
       </div>
-    </div>
-  )
-}
 
-export default Admin
+      {/* Form modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-fade-up">
+            <div className="flex items-center justify-between p-6 border-b border-stone-100">
+              <h2 className="font-display font-bold text-xl text-stone-900">
+                {editData ? "Edit Product" : "New Product"}
+              </h2>
+              <button onClick={() => { setShowForm(false); setEditData(null); }} className="p-2 hover:bg-stone-100 rounded-xl transition-colors">
+                <svg className="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <ProductForm
+                key={editData ? editData.id : "new"}
+                editData={editData}
+                setEditData={setEditData}
+                onDone={() => setShowForm(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Products table */}
+      <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-stone-100 bg-stone-50">
+                <th className="text-left text-xs font-semibold text-stone-500 uppercase tracking-wider px-6 py-4">Product</th>
+                <th className="text-left text-xs font-semibold text-stone-500 uppercase tracking-wider px-4 py-4">Category</th>
+                <th className="text-left text-xs font-semibold text-stone-500 uppercase tracking-wider px-4 py-4">Price</th>
+                <th className="text-left text-xs font-semibold text-stone-500 uppercase tracking-wider px-4 py-4">Stock</th>
+                <th className="text-right text-xs font-semibold text-stone-500 uppercase tracking-wider px-6 py-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-50">
+              {products.map((product) => (
+                <tr key={product.id} className="hover:bg-stone-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <img src={product.image} alt={product.title} className="w-12 h-12 object-cover rounded-xl flex-shrink-0" />
+                      <span className="font-medium text-stone-900 text-sm line-clamp-2">{product.title}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="text-xs bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full font-medium">
+                      {product.category || "Uncategorized"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 font-display font-bold text-stone-900">${Number(product.price).toFixed(2)}</td>
+                  <td className="px-4 py-4">
+                    <span className={`text-sm font-medium ${product.stock <= 10 ? "text-amber-500" : "text-emerald-500"}`}>
+                      {product.stock ?? "—"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="text-sm bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg font-medium hover:bg-stone-200 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => dispatch(deleteProduct(product.id))}
+                        className="text-sm bg-red-50 text-red-500 px-3 py-1.5 rounded-lg font-medium hover:bg-red-100 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Admin;
